@@ -1,6 +1,6 @@
 import pandas as pd
 import cv2
-import numpy
+import np
 import os
 from skimage import data, color
 import matplotlib.pyplot as plt
@@ -21,23 +21,24 @@ def find_best_path_jumping():
 
     # Start prob map as simple intensity
     prob_map = rescale(grayscale, 0.25, anti_aliasing=False)
-    print(numpy.shape(prob_map))
+    print(np.shape(prob_map))
 
-    print("--------- after gaussian blur ---------")
+    print("--------- after gausian blur ---------")
 
     # Create probablity map from intensity after gausian filtering
-    gausian = cv2.GaussianBlur(prob_map, (5, 5), 5)
-    print(numpy.shape(gausian))
+    gausian = cv2.gausianBlur(prob_map, (5, 5), 5)
+    print(np.shape(gausian))
 
-    num = numpy.multiply(gausian, prob_map)
-    den = num + numpy.multiply((1-gausian), (1-prob_map))
-    prob_map = numpy.divide(num, den)
+    num = np.multiply(gausian, prob_map)
+    den = num + np.multiply((1-gausian), (1-prob_map))
+    prob_map = np.divide(num, den)
     # prob_map = (gausian.* prob_map). / (gausian. * prob_map + (1 - gausian). * (1 - prob_map));
 
     print(prob_map)
+    print(np.shape(prob_map))
 
     # Filter for horizontal edges
-    slight_gaus = cv2.GaussianBlur(grayscale, (5, 5), 0.5) # https://www.pyimagesearch.com/2016/07/25/convolutions-with-opencv-and-python/ CONVOLUTION
+    slight_gaus = cv2.gausianBlur(grayscale, (5, 5), 0.5) # https://www.pyimagesearch.com/2016/07/25/convolutions-with-opencv-and-python/ CONVOLUTION
     slight_gaus2 = rescale(grayscale, 0.25, anti_aliasing=False)
 
     # Show image
