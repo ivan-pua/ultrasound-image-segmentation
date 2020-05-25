@@ -122,44 +122,56 @@ def registration(test):
         if (dist > 10):
             ble[i] = 0;
         elif np.mean(points[p, 1]) < point[1]:
-            ble[i] = np.mean(dist) - 1
+            ble[i] = np.mean(dist)
         else:
-            ble[i] = np.mean(dist) - 1
+            ble[i] = np.mean(dist)
 
     for i in range(num_rows):
         if (ble[i] < 0):
             ble[i] = 0
 
-    v = np.floor(ble * 255)
-
-    # print(v)
-    matlab_colourmap = scipy.io.loadmat('colourmap_matlab.mat')
-    mpua = matlab_colourmap['a']
-    pucolours = mpua * 255
 
     highest = max(ble)
+    lowest = min(ble)
+    print(f"The maximum error is {highest}mm")
+    print(f"The minimum error is {lowest}mm")
+
+    temp = ble;
+
+
+
     ble = ble * 255 / highest
     # print(ble)
     zeroes = np.zeros((39372, 2))
 
-    colours = np.append(ble, zeroes, axis=1)
+    colours = np.append(zeroes, ble, axis=1)
+    # print(ble)
+    for i in range(len(temp)):
+        if temp[i] > 1.7:
+            colours[i] = [0, 255, 0] # green colour means less accurate
+            continue
+
+        if temp[i] < 0.5:
+            colours[i] = [0, 0, 255] # blue colour means more accurate
+            continue
+
 
     pcd_image = open3d.geometry.PointCloud()
     pcd_image.points = open3d.utility.Vector3dVector(fixed_points)
     pcd_image.colors = open3d.utility.Vector3dVector(colours)
-    print((colours[:, 0]) / 255)
+    print(colours)
+    print(colours.shape)
     open3d.io.write_point_cloud("puaiiiii.ply", pcd_image)
     pcd_image = open3d.io.read_point_cloud("puaiiiii.ply")  # Read the point cloud
     # open3d.visualization.draw_geometries([pcd_image])
-#openmesh
+
+
     import trimesh
 
-    mesh1 = om.TriMesh()
     mesh1 = trimesh.load('/Users/puaqieshang/Desktop/Taste of Research/everything/models/Segmentation_bone.stl')
     mesh2 = mesh1.copy()
     mesh2.export('stuff_stl.ply')
-    pcd_stl = open3d.io.read_point_cloud("stuff_stl.ply")  # Read the point cloud
-    # open3d.visualization.draw_geometries([pcd_stl])
+
     def draw_registration_result_original_color(source, target, transformation):
         source_temp = copy.deepcopy(source)
         source_temp.transform(transformation)
@@ -214,7 +226,11 @@ def registration(test):
     # inn = ax.scatter(xs, ys, zs, s=10, c=(colours[:, 0]) / 255 , depthshade=True, cmap = cm)
     # plt.colorbar(inn)
     # plt.show()
-
+    import matplotlib.pyplot as plt
+    # print()
+    plt.hist(temp, bins=50)
+    plt.gca().set(title='Error/Distance', ylabel='Frequency');
+    plt.show()
 
 
     # https://matplotlib.org/3.1.1/gallery/images_contours_and_fields/multi_image.html#sphx-glr-gallery-images-contours-and-fields-multi-image-py
@@ -223,7 +239,7 @@ def registration(test):
 
 # read from csv
 file_location = "/Users/puaqieshang/Desktop/Taste of Research/everything/inital_experiments/pua.csv"  # saved from points.mat from MATLAB
+# file_location = "/Users/puaqieshang/Desktop/Taste of Research/original code [DO NOT EDIT]/inital_experiments/pua_phantom.csv"
 df = pd.read_csv(file_location, header=None)
 df = np.array(df)
-
 registration(np.array(df))  # Make it a np array - easier
