@@ -127,7 +127,6 @@ def get_prob_map(grayscale):
             j = j - 1
     shadow = cv2.GaussianBlur(shadow, (5, 5), 5)
     prob_map = (shadow * prob_map) / (shadow * prob_map + (1 - shadow) * (1 - prob_map))
-    cv2.imshow('pua it will work', prob_map)
 
     return prob_map
 
@@ -135,7 +134,7 @@ def get_prob_map(grayscale):
     if k == 27:  # wait for ESC key to exit
         cv2.destroyAllWindows()
     elif k == ord('s'):  # wait for 's' key to save and exit
-        cv2.imwrite('rishav.png', prob_map)
+        cv2.imwrite('prob map of a single scan.png', prob_map)
         cv2.destroyAllWindows()
 
 
@@ -144,13 +143,13 @@ def get_prob_map(grayscale):
 def main():
 
     points = []
-    images = glob.glob('/Users/puaqieshang/Desktop/Taste of Research/everything/phantom_images/phantom_3/scan_2/*.png')
+    images = glob.glob('/Users/puaqieshang/Desktop/Taste of Research/MATLAB code/everything/phantom_images/phantom_3/scan_2/*.png')
     images.sort()
 
     count = 0
     startTime = timer()
     for fname in images:
-        print(count)
+        print(f"Image No.{count+1}")
         img = cv2.imread(fname)
         # im = plt.imread(fname)
         # implot = plt.imshow(im)
@@ -181,7 +180,6 @@ def main():
         nexts = np.ones([a, b]) * -1
         find_best_path_jumping(start)
 
-        print(nexts)
         # get points on this scan
         point_scan = np.zeros([1, b])
 
@@ -192,7 +190,7 @@ def main():
             point_scan[0, curr_y] = curr_x
 
             if prob_map[int(curr_x), int(curr_y)] > highlyLikely: #NEED TO CHANGE TO HIGHLY LIKELY!!!!!
-                print("helloooooo")
+                # print("helloooooo")
                 # cv2.circle(gray, (int(curr_y), int(curr_x)), 1, (0, 0, 255), 1)
                 # append coloured points
                 plt.scatter(curr_x, curr_y, c='r', s=20)
@@ -210,7 +208,7 @@ def main():
 
         endTime = timer()
         # print(str(endTime - startTime) + " seconds")
-        print(f"The time is {endTime - startTime} seconds")
+        print(f"The time taken is {endTime - startTime} seconds")
 
     np.savetxt("pls-work.csv", [*zip(*points)], delimiter=",") # Transpose points data and save into csv format
 

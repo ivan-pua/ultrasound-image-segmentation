@@ -13,7 +13,7 @@ from skimage.io import imread
 
 def get_prob_map():
     # Test for one image first
-    path = r'/Users/puaqieshang/Desktop/Taste of Research/everything/phantom_images/phantom_3/scan_2/WirelessUSG2019-11-01-16-13-45.png'
+    path = r'/Users/puaqieshang/Desktop/Taste of Research/MATLAB code/everything/phantom_images/phantom_3/scan_2/WirelessUSG2019-11-01-16-13-45.png'
     original = cv2.imread(path)
 
     # Convert to grayscale
@@ -24,26 +24,24 @@ def get_prob_map():
     intensity_map = rescale(grayscale, .5, anti_aliasing=False)
     intensity_map = np.asarray(intensity_map)
     prob_map = intensity_map * 0.5
-    print(np.shape(prob_map))
 
     print("--------- after gausian blur ---------")
 
     # Create probablity map from intensity after gausian filtering
     gausian = cv2.GaussianBlur(prob_map, (5, 5), 5)
     gausian = np.asarray(gausian)
-    print(np.shape(gausian))
+
 
     num = np.multiply(gausian, prob_map)
     den = num + np.multiply((1 - gausian), (1 - prob_map))
     prob_map = np.divide(num, den)
     # prob_map = (gausian.* prob_map). / (gausian. * prob_map + (1 - gausian). * (1 - prob_map));
 
-    print(prob_map)
-    print(np.shape(prob_map))
-
-    # Filter for horizontal edges
-    slight_gaus = cv2.GaussianBlur(grayscale, (5, 5),
-                                   0.5)  # https://www.pyimagesearch.com/2016/07/25/convolutions-with-opencv-and-python/ CONVOLUTION
+    '''
+    Trying out different filters - only one is being used whereas the rest is commented
+    https://www.pyimagesearch.com/2016/07/25/convolutions-with-opencv-and-python/ 
+    '''
+    slight_gaus = cv2.GaussianBlur(grayscale, (5, 5), 0.5)
     slight_gaus2 = rescale(grayscale, .5, anti_aliasing=False)
 
     filt_top = np.array([[-1], [0], [1]])
@@ -51,17 +49,15 @@ def get_prob_map():
         [[-2, -2, -2, -2, -2], [-1, -1, -1, -1, -1], [0, 0, 0, 0, 0], [1, 1, 1, 1, 1], [2, 2, 2, 2, 2]])
     kernel1 = np.ones((3, 3), np.float32) / 9
     kernel1[1][1] = 0.8888889
-    # filt_left = np.array([[0, -1, -1, -2, -2],[1,  0, -1, -1, -2],[1,  1,  0, -1, -1],[2,  1,  1,  0, -1],[2,  2,
-    # 1,  1,  0]]) filt_right = np.array([[-2, -2, -1, -1,  0],[-2, -1, -1,  0,  1],[-1, -1,  0,  1,  1,],[-1,  0,
-    # 1,  1,  2],[0,  1,  1,  2,  2]])
+
     upper_filt = cv2.filter2D(slight_gaus2.astype(np.float32), -1, filt_top)
     upper_filt1 = (upper_filt - upper_filt.min()) / (upper_filt.max() - upper_filt.min())
-    cv2.imshow('hello', upper_filt1)
-    # left_filt = rescale(cv2.filter2D(slight_gaus2,-1,filt_left))
-    # right_filt = rescale(cv2.filter2D(slight_gaus2,-1,filt_right))
-    # Show image
-    cv2.imshow("prob_map", prob_map)  # displays gray-ish pic
-    cv2.imshow("slight gause", slight_gaus)
+
+    # Show different types of filter
+    # cv2.imshow('hello', upper_filt1) # displays gray-ish pic
+    # cv2.imshow("image with slight gaussian filter", slight_gaus)
+    # cv2.imshow("prob map", prob_map)
+
     y = 1
     x = 1
     shadow = np.ones((y, x)) * 0.2
@@ -79,13 +75,13 @@ def get_prob_map():
             j = j - 1
     shadow = cv2.GaussianBlur(shadow, (5, 5), 5)
     prob_map = (shadow * prob_map) / (shadow * prob_map + (1 - shadow) * (1 - prob_map))
-    cv2.imshow('pua it will work', prob_map)
+    cv2.imshow('final probability map', prob_map)
 
     k = cv2.waitKey(0) & 0xFF
     if k == 27:  # wait for ESC key to exit
         cv2.destroyAllWindows()
     elif k == ord('s'):  # wait for 's' key to save and exit
-        cv2.imwrite('rishav.png', prob_map)
+        cv2.imwrite('prob_map.png', prob_map)
         cv2.destroyAllWindows()
 
 
